@@ -124,7 +124,7 @@ class Application(tkinter.Frame):
         # テキストボックス(タイプ相性)
         self.text_box_type_match = ttk.Combobox(
         self,
-        values=["等倍", "ちょうばつぐん", "ばつぐん", "いまひとつ", "かなりいまひとつ"],  # 選択肢
+        values=["等倍", "ちょうばつぐん", "ばつぐん", "いまひとつ", "かなりいまひとつ", "こうかなし"],  # 選択肢
         state="readonly",           # 入力不可（選択のみ）
         width=10
         )
@@ -186,6 +186,11 @@ class Application(tkinter.Frame):
         wb.save("app_data.xlsx") # book保存
         self.message["text"] = "保存完了"
 
+
+        # 五捨五超入
+    def gosyagotyonyu(self, x):
+        return math.ceil(x) if x - math.floor(x) > 0.5 else math.floor(x)
+    
     def calculation(self):
         wb = openpyxl.load_workbook("app_data.xlsx")
         ws = wb.worksheets[0]
@@ -199,27 +204,143 @@ class Application(tkinter.Frame):
         efB_D = int(ws["B3"].value)
         # efHP = int(ws["B4"].value)
 
-        # 計算結果保存
-        rand_min = 0.85
-        base_damage = 22 * mo * (A_C+efA_C) / (B_D+efB_D)
+        # 実数値
+        A_C_act = math.floor(((((A_C-20)*2) + 31 + (efA_C*2)) * 50 / 100) + 5)
+        B_D_act = math.floor(((((B_D-20)*2) + 31 + (efB_D*2)) * 50 / 100) + 5)
 
-        base_damage_tr = math.floor(base_damage)
+        # 素のダメージ
+        base_damage = math.floor(22 * mo * A_C_act / B_D_act)
 
-        damage = (base_damage_tr / 50) +2
+        # 実ダメージ
+        damage = math.floor((base_damage / 50) + 2)
+        # 急所
+        damage_cr = self.gosyagotyonyu(damage * 1.5)
 
-        # 最大ダメージ
-        damage_tr = math.floor(damage)
+        # 乱数計算(最小値)
+        rand_damage = math.floor(damage * 85/100)
+        # 急所
+        rand_damage_cr = math.floor(damage_cr * 85/100)
 
-        damage_rand_min = damage_tr * rand_min
+        # タイプ一致
+        if int(ws["A4"].value) == True:
+            # 最大
+            # 五捨五超入
+            sametype_damage_max = self.gosyagotyonyu(damage * 1.5)
+            # 最小
+            # 五捨五超入
+            sametype_damage_min = self.gosyagotyonyu(rand_damage * 1.5)
 
-        # 最小ダメージ
-        damage_rand_min_tr = math.floor(damage_rand_min)
+            # 急所
+            # 最大
+            # 五捨五超入
+            sametype_damage_max_cr = self.gosyagotyonyu(damage_cr * 1.5)
+            # 最小
+            # 五捨五超入
+            sametype_damage_min_cr = self.gosyagotyonyu(rand_damage_cr * 1.5)
+        else:
+            # 最大
+            sametype_damage_max = damage
+            # 最小
+            sametype_damage_min = rand_damage
 
-        ws["Z1"].value = damage_tr
-        wb.save("app_data.xlsx")
+            # 急所
+            # 最大
+            sametype_damage_max_cr = damage_cr
+            # 最小
+            sametype_damage_min_cr = rand_damage_cr
+        
+        # タイプ相性
+        if ws["B5"].value == "ちょうばつぐん":
+            # 最大
+            # 切り捨て
+            match_damage_max = math.floor(sametype_damage_max * 4)
+            # 最小
+            # 切り捨て
+            match_damage_min = math.floor(sametype_damage_min * 4)
 
-        self.loading_message["text"] = damage_tr, damage_rand_min_tr
+            # 急所
+            # 最大
+            # 切り捨て
+            match_damage_max_cr = math.floor(sametype_damage_max_cr * 4)
+            # 最小
+            # 切り捨て
+            match_damage_min_cr = math.floor(sametype_damage_min_cr * 4)
+        elif ws["B5"].value == "ばつぐん":
+            # 最大
+            # 切り捨て
+            match_damage_max = math.floor(sametype_damage_max * 2)
+            # 最小
+            # 切り捨て
+            match_damage_min = math.floor(sametype_damage_min * 2)
 
+            # 急所
+            # 最大
+            # 切り捨て
+            match_damage_max_cr = math.floor(sametype_damage_max_cr * 2)
+            # 最小
+            # 切り捨て
+            match_damage_min_cr = math.floor(sametype_damage_min_cr * 2)
+        elif ws["B5"].value == "いまひとつ":
+            # 最大
+            # 切り捨て
+            match_damage_max = math.floor(sametype_damage_max * 0.5)
+            # 最小
+            # 切り捨て
+            match_damage_min = math.floor(sametype_damage_min * 0.5)
+
+            # 急所
+            # 最大
+            # 切り捨て
+            match_damage_max_cr = math.floor(sametype_damage_max_cr * 0.5)
+            # 最小
+            # 切り捨て
+            match_damage_min_cr = math.floor(sametype_damage_min_cr * 0.5)
+        elif ws["B5"].value == "かなりいまひとつ":
+            # 最大
+            # 切り捨て
+            match_damage_max = math.floor(sametype_damage_max * 0.25)
+            # 最小
+            # 切り捨て
+            match_damage_min = math.floor(sametype_damage_min * 0.25)
+
+            # 急所
+            # 最大
+            # 切り捨て
+            match_damage_max_cr = math.floor(sametype_damage_max_cr * 0.25)
+            # 最小
+            # 切り捨て
+            match_damage_min_cr = math.floor(sametype_damage_min_cr * 0.25)
+        elif ws["B5"].value == "こうかなし":
+            # 最大
+            match_damage_max = sametype_damage_max * 0
+            # 最小
+            match_damage_min = sametype_damage_min * 0
+
+            # 急所
+            # 最大
+            # 切り捨て
+            match_damage_max_cr = sametype_damage_max_cr * 0
+            # 最小
+            # 切り捨て
+            match_damage_min_cr = sametype_damage_min_cr * 0
+        else: # 等倍
+            # 最大
+            match_damage_max = sametype_damage_max
+            # 最小
+            match_damage_min = sametype_damage_min
+
+            # 急所
+            # 最大
+            # 切り捨て
+            match_damage_max_cr = sametype_damage_max_cr
+            # 最小
+            # 切り捨て
+            match_damage_min_cr = sametype_damage_min_cr
+        
+        self.loading_message["text"] = "ダメージ", match_damage_max, match_damage_min, "急所", match_damage_max_cr, match_damage_min_cr
+
+
+    # リセットボタン機能
     def reset(self):
         for i in self.cell_texts:
             i.delete(0, tkinter.END)
@@ -265,7 +386,7 @@ class Application(tkinter.Frame):
         self.loading_message["text"] = values
 
 root = tkinter.Tk()
-root.title("さぷー アプリ")
+root.title("ダメージ計算 アプリ")
 root.geometry("450x750")
 app = Application(root=root)
 root.mainloop()
