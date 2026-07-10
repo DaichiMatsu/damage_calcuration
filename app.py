@@ -8,7 +8,7 @@ import math
 class Application(tkinter.Frame):
     def __init__(self, root=None):
         super().__init__(root,
-                         width=420, height=720,
+                         width=820, height=1120,
                          borderwidth=1, relief="groove")
         self.root = root
         self.pack() # 位置を設定して配置
@@ -76,6 +76,34 @@ class Application(tkinter.Frame):
         self.check_box_type_same.place(x=100, y=100)
         self.check_box_type_same.place(x="50", y=str(4*22))
 
+        # メッセージ出力(性格AC)
+        text_label = tkinter.Message(self)
+        text_label["text"] = "性格"
+        text_label.place(x=10, y=str(5*22))
+        # テキストボックス(性格AC)
+        self.text_box_nature_AC = ttk.Combobox(
+        self,
+        values=["+", "0", "-"],  # 選択肢
+        state="readonly",           # 入力不可（選択のみ）
+        width=10
+        )
+        self.text_box_nature_AC.current(1)  # 0を選択状態にする
+        self.text_box_nature_AC.place(x="50", y=str(5*22))
+
+        # メッセージ出力(ランクAC)
+        text_label = tkinter.Message(self)
+        text_label["text"] = "ランクAC"
+        text_label.place(x=10, y=str(6*22))
+        # テキストボックス(ランクAC)
+        self.text_box_rank_AC = ttk.Combobox(
+        self,
+        values=["-6", "-5", "-4", "-3", "-2", "-1", "0", "1", "2", "3", "4", "5", "6"],  # 選択肢
+        state="readonly",           # 入力不可（選択のみ）
+        width=10
+        )
+        self.text_box_rank_AC.current(6)  # 0を選択状態にする
+        self.text_box_rank_AC.place(x="50", y=str(6*22))
+
 
         # メッセージ出力(B/D)
         text_label = tkinter.Message(self)
@@ -131,6 +159,34 @@ class Application(tkinter.Frame):
         self.text_box_type_match.current(0)  # 最初の項目を選択状態にする
         self.text_box_type_match.place(x="240", y=str(5*22))
 
+        # メッセージ出力(性格BD)
+        text_label = tkinter.Message(self)
+        text_label["text"] = "性格"
+        text_label.place(x=200, y=str(6*22))
+        # テキストボックス(性格BD)
+        self.text_box_nature_BD = ttk.Combobox(
+        self,
+        values=["+", "0", "-"],  # 選択肢
+        state="readonly",           # 入力不可（選択のみ）
+        width=10
+        )
+        self.text_box_nature_BD.current(1)  # 0を選択状態にする
+        self.text_box_nature_BD.place(x="240", y=str(6*22))
+
+        # メッセージ出力(ランクBD)
+        text_label = tkinter.Message(self)
+        text_label["text"] = "ランクBD"
+        text_label.place(x=200, y=str(7*22))
+        # テキストボックス(ランクBD)
+        self.text_box_rank_BD = ttk.Combobox(
+        self,
+        values=["-6", "-5", "-4", "-3", "-2", "-1", "0", "1", "2", "3", "4", "5", "6"],  # 選択肢
+        state="readonly",           # 入力不可（選択のみ）
+        width=10
+        )
+        self.text_box_rank_BD.current(6)  # ±0を選択状態にする
+        self.text_box_rank_BD.place(x="240", y=str(7*22))
+
 
         # 実行ボタン
         submit_btn = tkinter.Button(self)
@@ -169,6 +225,10 @@ class Application(tkinter.Frame):
         ws["A3"].value = text_mo
         check_box_type_same = self.checked_type_same.get()
         ws["A4"].value = check_box_type_same
+        text_box_nature_AC = self.text_box_nature_AC.get()
+        ws["A5"].value = text_box_nature_AC
+        text_box_rank_AC = self.text_box_rank_AC.get()
+        ws["A6"].value = text_box_rank_AC
 
 
         text_B_D = self.text_box_B_D.get()
@@ -181,6 +241,10 @@ class Application(tkinter.Frame):
         ws["B4"].value = text_efHP
         text_box_type_match = self.text_box_type_match.get()
         ws["B5"].value = text_box_type_match
+        text_box_nature_BD = self.text_box_nature_BD.get()
+        ws["B6"].value = text_box_nature_BD
+        text_box_rank_BD = self.text_box_rank_BD.get()
+        ws["B7"].value = text_box_rank_BD
         
         
         wb.save("app_data.xlsx") # book保存
@@ -200,16 +264,45 @@ class Application(tkinter.Frame):
         efA_C = int(ws["A2"].value)
         mo = int(ws["A3"].value)
         B_D = int(ws["B1"].value)
-        # HP = int(ws["B2"].value)
+        HP = int(ws["B2"].value)
         efB_D = int(ws["B3"].value)
-        # efHP = int(ws["B4"].value)
+        efHP = int(ws["B4"].value)
 
-        # 実数値
+        # 実数値(HP)
+        HP_act = math.floor(((((HP-75)*2) + 31 + (efHP*2)) * 50 / 100) + 60)
+
+        # 実数値(こうげき、ぼうぎょ)
         A_C_act = math.floor(((((A_C-20)*2) + 31 + (efA_C*2)) * 50 / 100) + 5)
         B_D_act = math.floor(((((B_D-20)*2) + 31 + (efB_D*2)) * 50 / 100) + 5)
 
+        # 性格補正
+        if ws["A5"].value == "+":
+            A_C_act_nat = math.floor(A_C_act * 1.1) 
+        elif ws["A5"].value == "-":
+            A_C_act_nat = math.floor(A_C_act * 0.9)
+        else:
+            A_C_act_nat = A_C_act
+
+        if ws["B6"].value == "+":
+            B_D_act_nat = math.floor(B_D_act * 1.1) 
+        elif ws["B6"].value == "-":
+            B_D_act_nat = math.floor(B_D_act * 0.9)
+        else:
+            B_D_act_nat = B_D_act   
+
+        # ランク補正
+        if int(ws["A6"].value) >= 0:
+            A_C_rank = math.floor(A_C_act_nat * (2+int(ws["A6"].value))/2)
+        else:
+            A_C_rank = math.floor(A_C_act_nat * 2/(2+int(ws["A6"].value)*-1))
+
+        if int(ws["B7"].value) >= 0:
+            B_D_rank = math.floor(B_D_act_nat * (2+int(ws["B7"].value))/2)
+        else:
+            B_D_rank = math.floor(B_D_act_nat * 2/(2+int(ws["B7"].value)*-1))
+
         # 素のダメージ
-        base_damage = math.floor(22 * mo * A_C_act / B_D_act)
+        base_damage = math.floor(22 * mo * A_C_rank / B_D_rank)
 
         # 実ダメージ
         damage = math.floor((base_damage / 50) + 2)
@@ -337,7 +430,16 @@ class Application(tkinter.Frame):
             # 切り捨て
             match_damage_min_cr = sametype_damage_min_cr
         
-        self.loading_message["text"] = "ダメージ", match_damage_max, match_damage_min, "急所", match_damage_max_cr, match_damage_min_cr
+        # 残り体力計算
+        rem_HP_max = HP_act - match_damage_max
+        rem_HP_min = HP_act - match_damage_min
+
+        # 急所
+        rem_HP_max_cr = HP_act - match_damage_max_cr
+        rem_HP_min_cr = HP_act - match_damage_min_cr
+
+
+        self.loading_message["text"] = "ダメージ", match_damage_max, match_damage_min, "残り体力", rem_HP_max, rem_HP_min, "急所", match_damage_max_cr, match_damage_min_cr, "残り体力", rem_HP_max_cr, rem_HP_min_cr
 
 
     # リセットボタン機能
@@ -387,6 +489,6 @@ class Application(tkinter.Frame):
 
 root = tkinter.Tk()
 root.title("ダメージ計算 アプリ")
-root.geometry("450x750")
+root.geometry("850x1150")
 app = Application(root=root)
 root.mainloop()
