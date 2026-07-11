@@ -4,6 +4,7 @@ from tkinter import filedialog
 import openpyxl
 from pathlib import Path
 import math
+import sqlite3
 
 class Application(tkinter.Frame):
     def __init__(self, root=None):
@@ -14,6 +15,10 @@ class Application(tkinter.Frame):
         self.pack() # 位置を設定して配置
         self.pack_propagate(0) # サイズ調整
         self.create_widgets()
+
+        # 表示ボタンを押すと表示される情報を載せるフレーム
+        self.pokemon_message = tkinter.Label(self)
+        self.pokemon_message.place(x=460, y=3*22)
 
 
     def create_widgets(self):
@@ -212,6 +217,57 @@ class Application(tkinter.Frame):
         submit_btn["text"] = "読み込み"
         submit_btn["command"] = self.loading_data
         submit_btn.place(x=150, y=270)
+
+
+
+        # データベースから情報取得
+
+        # メッセージ出力(ポケモンの名前)
+        text_label = tkinter.Message(self)
+        text_label["text"] = "名前"
+        text_label.place(x=400, y=str(22))
+        # テキストボックス(ポケモンの名前)
+        self.text_box_name = tkinter.Entry(self)
+        self.text_box_name["width"] = 10
+        self.text_box_name.place(x="440", y=str(22))
+        self.cell_texts.append(self.text_box_name) 
+
+
+        # ポケモン情報表示ボタン
+        display_btn = tkinter.Button(self)
+        display_btn["text"] = "表示"
+        display_btn["command"] = self.display
+        display_btn.place(x=500, y=400)
+
+    # 表示ボタンを押すと入力されたポケモンの情報を表示
+    def display(self):
+        name = self.text_box_name.get()    # text_box_nameに入力された名前
+
+        conn = sqlite3.connect("pokemon.db")
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+
+        cur.execute(
+            "SELECT * FROM pokemon WHERE name=?",
+            (name,)
+        )
+
+        pokemon = cur.fetchone()
+
+        conn.close()
+
+        self.pokemon_message["text"] = (
+        f"No: {pokemon['No']}\n"
+        f"名前: {pokemon['name']}\n"
+        f"HP: {pokemon['hp']}\n"
+        f"こうげき: {pokemon['attack']}\n"
+        f"ぼうぎょ: {pokemon['defense']}\n"
+        f"とくこう: {pokemon['sp_attack']}\n"
+        f"とくぼう: {pokemon['sp_defense']}\n"
+        f"すばやさ: {pokemon['speed']}\n"
+        f"タイプ1: {pokemon['type1']}\n"
+        f"タイプ2: {pokemon['type2']}"
+    )
 
     # 実行ボタンを押すとテキストを入力するシステムをメソッドとして作成
     def save_data(self):
