@@ -1,9 +1,10 @@
 import sqlite3
 
-conn = sqlite3.connect("pokemon.db")
-cur = conn.cursor()
+# pokemon.db
+pokemon_conn = sqlite3.connect("pokemon.db")
+pokemon_cur = pokemon_conn.cursor()
 
-cur.execute("""
+pokemon_cur.execute("""
 CREATE TABLE IF NOT EXISTS pokemon(
     No INTEGER,
     name TEXT,
@@ -18,5 +19,22 @@ CREATE TABLE IF NOT EXISTS pokemon(
 )
 """)
 
-conn.commit()
-conn.close()
+pokemon_conn.commit()
+pokemon_conn.close()
+
+# move.db
+move_conn = sqlite3.connect("move.db")
+move_cur = move_conn.cursor()
+
+move_cur.execute("""
+CREATE TABLE IF NOT EXISTS move(
+    name TEXT,
+    type TEXT,
+    class TEXT,
+    power INTEGER
+    
+)
+""")
+
+move_conn.commit()
+move_conn.close()

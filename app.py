@@ -18,7 +18,7 @@ class Application(tkinter.Frame):
 
         # 表示ボタンを押すと表示される情報を載せるフレーム
         self.pokemon_message = tkinter.Label(self)
-        self.pokemon_message.place(x=460, y=3*22)
+        self.pokemon_message.place(x=600, y=3*22)
 
 
     def create_widgets(self):
@@ -222,15 +222,49 @@ class Application(tkinter.Frame):
 
         # データベースから情報取得
 
-        # メッセージ出力(ポケモンの名前)
+        # メッセージ出力(攻撃ポケモンの名前)
         text_label = tkinter.Message(self)
-        text_label["text"] = "名前"
+        text_label["text"] = "攻撃ポケモン"
         text_label.place(x=400, y=str(22))
-        # テキストボックス(ポケモンの名前)
-        self.text_box_name = tkinter.Entry(self)
-        self.text_box_name["width"] = 10
-        self.text_box_name.place(x="440", y=str(22))
-        self.cell_texts.append(self.text_box_name) 
+        # テキストボックス(攻撃ポケモンの名前)
+        self.text_box_a_name = tkinter.Entry(self)
+        self.text_box_a_name["width"] = 10
+        self.text_box_a_name.place(x="440", y=str(22))
+        self.cell_texts.append(self.text_box_a_name) 
+
+        # メッセージ出力(わざの名前)
+        text_label = tkinter.Message(self)
+        text_label["text"] = "わざ"
+        text_label.place(x=400, y=str(3*22))
+        # テキストボックス(わざの名前)
+        self.text_box_mo_name = tkinter.Entry(self)
+        self.text_box_mo_name["width"] = 10
+        self.text_box_mo_name.place(x="440", y=str(3*22))
+        self.cell_texts.append(self.text_box_mo_name) 
+
+        # メッセージ出力(防御ポケモンの名前)
+        text_label = tkinter.Message(self)
+        text_label["text"] = "防御ポケモン"
+        text_label.place(x=600, y=str(22))
+        # テキストボックス(防御ポケモンの名前)
+        self.text_box_b_name = tkinter.Entry(self)
+        self.text_box_b_name["width"] = 10
+        self.text_box_b_name.place(x="640", y=str(22))
+        self.cell_texts.append(self.text_box_b_name) 
+
+        # メッセージ出力(物理/特殊)
+        text_label = tkinter.Message(self)
+        text_label["text"] = "物理/特殊"
+        text_label.place(x=600, y=str(2*22))
+        # テキストボックス(物理/特殊)
+        self.text_box_mo_type = ttk.Combobox(
+        self,
+        values=["物理", "特殊"],  # 選択肢
+        state="readonly",           # 入力不可（選択のみ）
+        width=10
+        )
+        self.text_box_mo_type.current(0)  # 最初の項目を選択状態にする
+        self.text_box_mo_type.place(x="640", y=str(2*22))
 
 
         # ポケモン情報表示ボタン
@@ -241,32 +275,70 @@ class Application(tkinter.Frame):
 
     # 表示ボタンを押すと入力されたポケモンの情報を表示
     def display(self):
-        name = self.text_box_name.get()    # text_box_nameに入力された名前
-
-        conn = sqlite3.connect("pokemon.db")
-        conn.row_factory = sqlite3.Row
-        cur = conn.cursor()
-
-        cur.execute(
+        # 攻撃ポケモン
+        a_name = self.text_box_a_name.get()    # text_box_nameに入力された名前
+        conn_a = sqlite3.connect("pokemon.db")
+        conn_a.row_factory = sqlite3.Row
+        cur_a = conn_a.cursor()
+        cur_a.execute(
             "SELECT * FROM pokemon WHERE name=?",
-            (name,)
+            (a_name,)
         )
+        self.a_pokemon = cur_a.fetchone()
+        conn_a.close()
 
-        pokemon = cur.fetchone()
 
-        conn.close()
+        # 防御ポケモン
+        b_name = self.text_box_b_name.get()
+        conn_b = sqlite3.connect("pokemon.db")
+        conn_b.row_factory = sqlite3.Row
+        cur_b = conn_b.cursor()
+        cur_b.execute(
+            "SELECT * FROM pokemon WHERE name=?",
+            (b_name,)
+        )
+        self.b_pokemon = cur_b.fetchone()
+        conn_b.close()
+
+
+        # わざ
+        mo_name = self.text_box_mo_name.get()
+        conn_mo = sqlite3.connect("move.db")
+        conn_mo.row_factory = sqlite3.Row
+        cur_mo = conn_mo.cursor()
+        cur_mo.execute(
+            "SELECT * FROM move WHERE name=?",
+            (mo_name,)
+        )
+        self.mo_pokemon = cur_mo.fetchone()
+        conn_mo.close()
+
 
         self.pokemon_message["text"] = (
-        f"No: {pokemon['No']}\n"
-        f"名前: {pokemon['name']}\n"
-        f"HP: {pokemon['hp']}\n"
-        f"こうげき: {pokemon['attack']}\n"
-        f"ぼうぎょ: {pokemon['defense']}\n"
-        f"とくこう: {pokemon['sp_attack']}\n"
-        f"とくぼう: {pokemon['sp_defense']}\n"
-        f"すばやさ: {pokemon['speed']}\n"
-        f"タイプ1: {pokemon['type1']}\n"
-        f"タイプ2: {pokemon['type2']}"
+        f"No: {self.a_pokemon['No']}\n"
+        f"名前: {self.a_pokemon['name']}\n"
+        f"HP: {self.a_pokemon['hp']}\n"
+        f"こうげき: {self.a_pokemon['attack']}\n"
+        f"ぼうぎょ: {self.a_pokemon['defense']}\n"
+        f"とくこう: {self.a_pokemon['sp_attack']}\n"
+        f"とくぼう: {self.a_pokemon['sp_defense']}\n"
+        f"すばやさ: {self.a_pokemon['speed']}\n"
+        f"タイプ1: {self.a_pokemon['type1']}\n"
+        f"タイプ2: {self.a_pokemon['type2']}\n"
+        f"No: {self.b_pokemon['No']}\n"
+        f"名前: {self.b_pokemon['name']}\n"
+        f"HP: {self.b_pokemon['hp']}\n"
+        f"こうげき: {self.b_pokemon['attack']}\n"
+        f"ぼうぎょ: {self.b_pokemon['defense']}\n"
+        f"とくこう: {self.b_pokemon['sp_attack']}\n"
+        f"とくぼう: {self.b_pokemon['sp_defense']}\n"
+        f"すばやさ: {self.b_pokemon['speed']}\n"
+        f"タイプ1: {self.b_pokemon['type1']}\n"
+        f"タイプ2: {self.b_pokemon['type2']}\n"
+        f"わざ: {self.mo_pokemon['name']}\n"
+        f"タイプ: {self.mo_pokemon['type']}\n"
+        f"分類: {self.mo_pokemon['class']}\n"
+        f"威力: {self.mo_pokemon['power']}"
     )
 
     # 実行ボタンを押すとテキストを入力するシステムをメソッドとして作成
@@ -301,6 +373,9 @@ class Application(tkinter.Frame):
         ws["B6"].value = text_box_nature_BD
         text_box_rank_BD = self.text_box_rank_BD.get()
         ws["B7"].value = text_box_rank_BD
+
+        text_box_mo_type = self.text_box_mo_type.get()
+        ws["C1"].value = text_box_mo_type
         
         
         wb.save("app_data.xlsx") # book保存
@@ -315,21 +390,31 @@ class Application(tkinter.Frame):
         wb = openpyxl.load_workbook("app_data.xlsx")
         ws = wb.worksheets[0]
 
+        if self.mo_pokemon["class"] == "物理":
+            A_C = int(self.a_pokemon['attack'])
+            B_D = int(self.b_pokemon['defense'])
+        else:
+            A_C = int(self.a_pokemon['sp_attack'])
+            B_D = int(self.b_pokemon['sp_defense'])
         # 文字列をint型に直す
-        A_C = int(ws["A1"].value)
+        # A_C = int(ws["A1"].value)
         efA_C = int(ws["A2"].value)
-        mo = int(ws["A3"].value)
-        B_D = int(ws["B1"].value)
-        HP = int(ws["B2"].value)
+        mo = self.mo_pokemon["power"]
+        # B_D = int(ws["B1"].value)
+        # HP = int(ws["B2"].value)
+        HP = int(self.b_pokemon["hp"])
         efB_D = int(ws["B3"].value)
         efHP = int(ws["B4"].value)
 
         # 実数値(HP)
-        HP_act = math.floor(((((HP-75)*2) + 31 + (efHP*2)) * 50 / 100) + 60)
+        # HP_act = math.floor(((((HP-75)*2) + 31 + (efHP*2)) * 50 / 100) + 60)
+        HP_act = math.floor(((((HP)*2) + 31 + (efHP*2)) * 50 / 100) + 60)
 
         # 実数値(こうげき、ぼうぎょ)
-        A_C_act = math.floor(((((A_C-20)*2) + 31 + (efA_C*2)) * 50 / 100) + 5)
-        B_D_act = math.floor(((((B_D-20)*2) + 31 + (efB_D*2)) * 50 / 100) + 5)
+        # A_C_act = math.floor(((((A_C-20)*2) + 31 + (efA_C*2)) * 50 / 100) + 5)
+        # B_D_act = math.floor(((((B_D-20)*2) + 31 + (efB_D*2)) * 50 / 100) + 5)
+        A_C_act = math.floor(((((A_C)*2) + 31 + (efA_C*2)) * 50 / 100) + 5)
+        B_D_act = math.floor(((((B_D)*2) + 31 + (efB_D*2)) * 50 / 100) + 5)
 
         # 性格補正
         if ws["A5"].value == "+":
@@ -371,7 +456,8 @@ class Application(tkinter.Frame):
         rand_damage_cr = math.floor(damage_cr * 85/100)
 
         # タイプ一致
-        if int(ws["A4"].value) == True:
+        # if int(ws["A4"].value) == True:
+        if self.a_pokemon["type1"] == self.mo_pokemon["type"] or self.a_pokemon["type2"] == self.mo_pokemon["type"]:
             # 最大
             # 五捨五超入
             sametype_damage_max = self.gosyagotyonyu(damage * 1.5)
